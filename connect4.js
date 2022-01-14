@@ -1,3 +1,4 @@
+"use strict";
 /** Connect Four
  *
  * Player 1 and 2 alternate turns. On each turn, a piece is dropped down a
@@ -8,12 +9,12 @@ class Game {
 	constructor(height, width) {
 		this.height = height;
 		this.width = width;
+    this.currPlayer = 1; // active player: 1 or 2
+	  this.board = []; // array of rows, each row is array of cells  (board[y][x])
+    this.handleClick = this.handleClick.bind(this);
 		this.makeBoard();
-		// NOTE: Does it make sense to populate the DOM in the constructor?
 		this.makeHtmlBoard();
 	}
-	currPlayer = 1; // active player: 1 or 2
-	board = []; // array of rows, each row is array of cells  (board[y][x])
 
 	/** makeBoard: create in-JS board structure:
   *   board = array of rows, each row is array of cells  (board[y][x])
@@ -33,7 +34,7 @@ class Game {
 		// make column tops (clickable area for adding a piece to that column)
 		const top = document.createElement('tr');
 		top.setAttribute('id', 'column-top');
-		top.addEventListener('click', this.handleClick.bind(this));
+		top.addEventListener('click', this.handleClick);
 
 		for (let x = 0; x < this.width; x++) {
 			const headCell = document.createElement('td');
@@ -113,16 +114,13 @@ class Game {
 		}
 
 		// switch players
-		this.currPlayer =
-
-				this.currPlayer === 1 ? 2 :
-				1;
+		this.currPlayer = this.currPlayer === 1 ? 2 : 1;
 	}
 
 	/** checkForWin: check board cell-by-cell for "does a win start here?" */
 
 	checkForWin() {
-		function _win(cells) {
+    function _winCheck(cells) {
 			// Check four cells to see if they're all color of current player
 			//  - cells: list of four (y, x) cells
 			//  - returns true if all are legal coordinates & all match this.currPlayer
@@ -132,6 +130,7 @@ class Game {
 					y >= 0 && y < this.height && x >= 0 && x < this.width && this.board[y][x] === this.currPlayer
 			);
 		}
+    const _win = _winCheck.bind(this);
 
 		for (let y = 0; y < this.height; y++) {
 			for (let x = 0; x < this.width; x++) {
@@ -151,4 +150,4 @@ class Game {
 	}
 }
 
-new Game(6, 7);
+let g = new Game(6, 7);
