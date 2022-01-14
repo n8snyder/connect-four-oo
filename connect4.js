@@ -9,17 +9,24 @@ class Game {
 	constructor(height, width) {
 		this.height = height;
 		this.width = width;
-		this.currPlayer = 1; // active player: 1 or 2
+		this.currPlayer = 1;
+		this.players = [];
 		this.board = []; // array of rows, each row is array of cells  (board[y][x])
 		this.handleClick = this.handleClick.bind(this);
 		this.startGame = this.startGame.bind(this);
-		this.startButton = document.getElementById('start-game');
-		this.startButton.addEventListener('click', this.startGame);
+		this.startForm = document.getElementById('game-settings');
+		this.startForm.addEventListener('submit', this.startGame);
 	}
 
-	startGame() {
+	startGame(event) {
+		event.preventDefault();
+		this.players = [];
+		const p1Color = Object.values(event.target).find(element => element.id === "p1-color").value;
+		const p2Color = Object.values(event.target).find(element => element.id === "p2-color").value;
 		this.board = [];
-		this.currPlayer = 1;
+		this.players.push(new Player(p1Color));
+		this.players.push(new Player(p2Color));
+
 		this.makeBoard();
 		this.makeHtmlBoard();
 	}
@@ -85,6 +92,7 @@ class Game {
 		piece.classList.add('piece');
 		piece.classList.add(`p${this.currPlayer}`);
 		piece.style.top = -50 * (y + 2);
+		piece.style.backgroundColor = this.currPlayer.color;
 
 		const spot = document.getElementById(`${y}-${x}`);
 		spot.append(piece);
@@ -126,7 +134,7 @@ class Game {
 		// switch players
 		this.currPlayer =
 
-				this.currPlayer === 1 ? 2 :
+			this.currPlayer === 1 ? 2 :
 				1;
 	}
 
@@ -139,7 +147,7 @@ class Game {
 			//  - returns true if all are legal coordinates & all match this.currPlayer
 
 			return cells.every(
-				([ y, x ]) =>
+				([y, x]) =>
 					y >= 0 && y < this.height && x >= 0 && x < this.width && this.board[y][x] === this.currPlayer
 			);
 		}
@@ -149,10 +157,10 @@ class Game {
 			for (let x = 0; x < this.width; x++) {
 				// get "check list" of 4 cells (starting here) for each of the different
 				// ways to win
-				const horiz = [ [ y, x ], [ y, x + 1 ], [ y, x + 2 ], [ y, x + 3 ] ];
-				const vert = [ [ y, x ], [ y + 1, x ], [ y + 2, x ], [ y + 3, x ] ];
-				const diagDR = [ [ y, x ], [ y + 1, x + 1 ], [ y + 2, x + 2 ], [ y + 3, x + 3 ] ];
-				const diagDL = [ [ y, x ], [ y + 1, x - 1 ], [ y + 2, x - 2 ], [ y + 3, x - 3 ] ];
+				const horiz = [[y, x], [y, x + 1], [y, x + 2], [y, x + 3]];
+				const vert = [[y, x], [y + 1, x], [y + 2, x], [y + 3, x]];
+				const diagDR = [[y, x], [y + 1, x + 1], [y + 2, x + 2], [y + 3, x + 3]];
+				const diagDL = [[y, x], [y + 1, x - 1], [y + 2, x - 2], [y + 3, x - 3]];
 
 				// find winner (only checking each win-possibility as needed)
 				if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
@@ -160,6 +168,12 @@ class Game {
 				}
 			}
 		}
+	}
+}
+
+class Player {
+	constructor(color) {
+		this.color = color;
 	}
 }
 
