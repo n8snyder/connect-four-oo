@@ -9,7 +9,7 @@ class Game {
 	constructor(height, width) {
 		this.height = height;
 		this.width = width;
-		this.currPlayer = 1;
+		this.currPlayer;
 		this.players = [];
 		this.board = []; // array of rows, each row is array of cells  (board[y][x])
 		this.handleClick = this.handleClick.bind(this);
@@ -18,17 +18,25 @@ class Game {
 		this.startForm.addEventListener('submit', this.startGame);
 	}
 
+	/** TODO: docstring
+   * get color values from game settings */
+
 	startGame(event) {
 		event.preventDefault();
-		this.players = [];
-		const p1Color = Object.values(event.target).find(element => element.id === "p1-color").value;
-		const p2Color = Object.values(event.target).find(element => element.id === "p2-color").value;
-		this.board = [];
-		this.players.push(new Player(p1Color));
-		this.players.push(new Player(p2Color));
-
+		const p1Color = Object.values(event.target).find((element) => element.id === 'p1-color').value;
+		const p2Color = Object.values(event.target).find((element) => element.id === 'p2-color').value;
+		this.makePlayers(p1Color, p2Color);
 		this.makeBoard();
 		this.makeHtmlBoard();
+	}
+
+	/** TODO: docstring  */
+
+	makePlayers(p1Color, p2Color) {
+		this.players = [];
+		this.players.push(new Player(p1Color, 1));
+		this.players.push(new Player(p2Color, 2));
+		this.currPlayer = this.players[0];
 	}
 
 	/** makeBoard: create in-JS board structure:
@@ -36,6 +44,7 @@ class Game {
   */
 
 	makeBoard() {
+		this.board = [];
 		for (let y = 0; y < this.height; y++) {
 			this.board.push(Array.from({ length: this.width }));
 		}
@@ -90,7 +99,7 @@ class Game {
 	placeInTable(y, x) {
 		const piece = document.createElement('div');
 		piece.classList.add('piece');
-		piece.classList.add(`p${this.currPlayer}`);
+		piece.classList.add(`p${this.currPlayer.playerId}`);
 		piece.style.top = -50 * (y + 2);
 		piece.style.backgroundColor = this.currPlayer.color;
 
@@ -118,12 +127,12 @@ class Game {
 		}
 
 		// place piece in board and add to HTML table
-		this.board[y][x] = this.currPlayer;
+		this.board[y][x] = this.currPlayer.playerId;
 		this.placeInTable(y, x);
 
 		// check for win
 		if (this.checkForWin()) {
-			return this.endGame(`Player ${this.currPlayer} won!`);
+			return this.endGame(`Player ${this.currPlayer.playerId} won!`);
 		}
 
 		// check for tie
@@ -134,8 +143,8 @@ class Game {
 		// switch players
 		this.currPlayer =
 
-			this.currPlayer === 1 ? 2 :
-				1;
+				this.currPlayer.playerId === 1 ? this.players[1] :
+				this.players[0];
 	}
 
 	/** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -144,11 +153,15 @@ class Game {
 		function _winCheck(cells) {
 			// Check four cells to see if they're all color of current player
 			//  - cells: list of four (y, x) cells
-			//  - returns true if all are legal coordinates & all match this.currPlayer
+			//  - returns true if all are legal coordinates & all match this.currPlayer.playerId
 
 			return cells.every(
-				([y, x]) =>
-					y >= 0 && y < this.height && x >= 0 && x < this.width && this.board[y][x] === this.currPlayer
+				([ y, x ]) =>
+					y >= 0 &&
+					y < this.height &&
+					x >= 0 &&
+					x < this.width &&
+					this.board[y][x] === this.currPlayer.playerId
 			);
 		}
 		const _win = _winCheck.bind(this);
@@ -157,10 +170,10 @@ class Game {
 			for (let x = 0; x < this.width; x++) {
 				// get "check list" of 4 cells (starting here) for each of the different
 				// ways to win
-				const horiz = [[y, x], [y, x + 1], [y, x + 2], [y, x + 3]];
-				const vert = [[y, x], [y + 1, x], [y + 2, x], [y + 3, x]];
-				const diagDR = [[y, x], [y + 1, x + 1], [y + 2, x + 2], [y + 3, x + 3]];
-				const diagDL = [[y, x], [y + 1, x - 1], [y + 2, x - 2], [y + 3, x - 3]];
+				const horiz = [ [ y, x ], [ y, x + 1 ], [ y, x + 2 ], [ y, x + 3 ] ];
+				const vert = [ [ y, x ], [ y + 1, x ], [ y + 2, x ], [ y + 3, x ] ];
+				const diagDR = [ [ y, x ], [ y + 1, x + 1 ], [ y + 2, x + 2 ], [ y + 3, x + 3 ] ];
+				const diagDL = [ [ y, x ], [ y + 1, x - 1 ], [ y + 2, x - 2 ], [ y + 3, x - 3 ] ];
 
 				// find winner (only checking each win-possibility as needed)
 				if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
@@ -171,9 +184,13 @@ class Game {
 	}
 }
 
+/**
+ * TODO: docstring
+ */
 class Player {
-	constructor(color) {
+	constructor(color, playerId) {
 		this.color = color;
+		this.playerId = playerId;
 	}
 }
 
