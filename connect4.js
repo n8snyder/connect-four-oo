@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 /** Connect Four
  *
  * Player 1 and 2 alternate turns. On each turn, a piece is dropped down a
@@ -9,9 +9,17 @@ class Game {
 	constructor(height, width) {
 		this.height = height;
 		this.width = width;
-    this.currPlayer = 1; // active player: 1 or 2
-	  this.board = []; // array of rows, each row is array of cells  (board[y][x])
-    this.handleClick = this.handleClick.bind(this);
+		this.currPlayer = 1; // active player: 1 or 2
+		this.board = []; // array of rows, each row is array of cells  (board[y][x])
+		this.handleClick = this.handleClick.bind(this);
+		this.startGame = this.startGame.bind(this);
+		this.startButton = document.getElementById('start-game');
+		this.startButton.addEventListener('click', this.startGame);
+	}
+
+	startGame() {
+		this.board = [];
+		this.currPlayer = 1;
 		this.makeBoard();
 		this.makeHtmlBoard();
 	}
@@ -30,6 +38,7 @@ class Game {
 
 	makeHtmlBoard() {
 		const htmlBoard = document.getElementById('board');
+		htmlBoard.innerHTML = '';
 
 		// make column tops (clickable area for adding a piece to that column)
 		const top = document.createElement('tr');
@@ -84,7 +93,8 @@ class Game {
 	/** endGame: announce game end */
 
 	endGame(msg) {
-		alert(msg);
+		setTimeout(() => alert(msg), 0);
+		document.getElementById('column-top').removeEventListener('click', this.handleClick);
 	}
 
 	/** handleClick: handle click of column top to play piece */
@@ -114,13 +124,16 @@ class Game {
 		}
 
 		// switch players
-		this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+		this.currPlayer =
+
+				this.currPlayer === 1 ? 2 :
+				1;
 	}
 
 	/** checkForWin: check board cell-by-cell for "does a win start here?" */
 
 	checkForWin() {
-    function _winCheck(cells) {
+		function _winCheck(cells) {
 			// Check four cells to see if they're all color of current player
 			//  - cells: list of four (y, x) cells
 			//  - returns true if all are legal coordinates & all match this.currPlayer
@@ -130,7 +143,7 @@ class Game {
 					y >= 0 && y < this.height && x >= 0 && x < this.width && this.board[y][x] === this.currPlayer
 			);
 		}
-    const _win = _winCheck.bind(this);
+		const _win = _winCheck.bind(this);
 
 		for (let y = 0; y < this.height; y++) {
 			for (let x = 0; x < this.width; x++) {
